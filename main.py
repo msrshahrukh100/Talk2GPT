@@ -1,5 +1,8 @@
 import whisper
 from openai import OpenAI
+import os
+import sys
+import time
 
 client = OpenAI()
 
@@ -12,6 +15,8 @@ def speech_to_text():
 
 def get_openai_response():
     content = speech_to_text()
+    sys.stdout.write("\rThinking...")
+    sys.stdout.flush()
     response = client.chat.completions.create(
         model="gpt-3.5-turbo",
         messages=[
@@ -24,6 +29,10 @@ def get_openai_response():
     return response.choices[0].message.content
 
 def get_audio_response():
+    try:
+        os.remove("output.mp3")
+    except OSError:
+        pass
     text = get_openai_response()
     response = client.audio.speech.create(
       model="tts-1",
@@ -31,4 +40,7 @@ def get_audio_response():
       input=text
     )
     response.stream_to_file(f"output.mp3")
+    sys.stdout.write(f"\rAI: {text}")
+    sys.stdout.flush()
+    
     

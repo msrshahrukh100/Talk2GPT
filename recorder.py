@@ -47,7 +47,8 @@ class Recorder:
                                   frames_per_buffer=chunk)
 
     def record(self):
-        print('Noise detected, recording beginning')
+        self.player.stop()
+        print('Listening...')
         rec = []
         current = time.time()
         end = time.time() + TIMEOUT_LENGTH
@@ -70,7 +71,7 @@ class Recorder:
         wf.writeframes(recording)
         wf.close()
         # print('Written to file: {}'.format(filename))
-        print('Returning to listening')        
+        # print('Returning to listening')        
 
     def listen(self):
         print('Listening beginning')
