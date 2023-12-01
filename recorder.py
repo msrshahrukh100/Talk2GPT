@@ -3,9 +3,8 @@ import math
 import struct
 import wave
 import time
-import os
+from chatgpt import ChatGPT
 import vlc
-from main import get_audio_response
 
 Threshold = 10
 
@@ -63,28 +62,20 @@ class Recorder:
         self.write(b''.join(rec))
 
     def write(self, recording):
-
         wf = wave.open("input.wav", 'wb')
         wf.setnchannels(CHANNELS)
         wf.setsampwidth(self.p.get_sample_size(FORMAT))
         wf.setframerate(RATE)
         wf.writeframes(recording)
         wf.close()
-        # print('Written to file: {}'.format(filename))
-        # print('Returning to listening')        
 
     def listen(self):
         print('Listening beginning')
+        chatgpt = ChatGPT()
         while True:
             input = self.stream.read(chunk, exception_on_overflow=False)
             rms_val = self.rms(input)
             if rms_val > Threshold and not self.player.get_state().__str__() == 'State.Playing':
                 self.record()
-                get_audio_response()
+                chatgpt.get_openai_response_as_audio()
                 self.player.play()
-                
-                
-
-a = Recorder()
-# a.play()
-a.listen()
