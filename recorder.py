@@ -9,25 +9,24 @@ import vlc
 Threshold = 10
 
 SHORT_NORMALIZE = (1.0/32768.0)
-chunk = 4096
+number_of_frames = 4096
 FORMAT = pyaudio.paInt16
 CHANNELS = 1
 RATE = 16000
 swidth = 2
-
 TIMEOUT_LENGTH = 2
 
-f_name_directory = "."
 
 class Recorder:
 
     @staticmethod
-    def rms(frame):
-        count = len(frame) / swidth
+    def rms(frames):
+        count = len(frames) / swidth
+        # count = 4096 the number of frames
         format = "%dh" % (count)
-        shorts = struct.unpack(format, frame)
-
+        shorts = struct.unpack(format, frames)
         sum_squares = 0.0
+        # len(shorts) = 4096
         for sample in shorts:
             n = sample * SHORT_NORMALIZE
             sum_squares += n * n
@@ -43,7 +42,7 @@ class Recorder:
                                   rate=RATE,
                                   input=True,
                                   output=True,
-                                  frames_per_buffer=chunk)
+                                  frames_per_buffer=number_of_frames)
 
     def record(self):
         self.player.stop()
@@ -54,9 +53,9 @@ class Recorder:
 
         while current <= end:
 
-            data = self.stream.read(chunk)
-            if self.rms(data) >= Threshold: end = time.time() + TIMEOUT_LENGTH
-
+            data = self.stream.read(number_of_frames)
+            if self.rms(data) >= Threshold: 
+                end = time.time() + TIMEOUT_LENGTH
             current = time.time()
             rec.append(data)
         self.write(b''.join(rec))
@@ -73,7 +72,7 @@ class Recorder:
         print('Listening beginning')
         chatgpt = ChatGPT()
         while True:
-            input = self.stream.read(chunk, exception_on_overflow=False)
+            input = self.stream.read(number_of_frames, exception_on_overflow=False)
             rms_val = self.rms(input)
             if rms_val > Threshold and not self.player.get_state().__str__() == 'State.Playing':
                 self.record()
